@@ -13,8 +13,12 @@
     "loop": "node src/loop.js",
     "loop:once": "node src/loop.js --once",
     "loop:dry": "node src/loop.js --once --dry-run",
+    "webhooks:github": "node src/webhooks/github.js",
     "test": "node --test"
   },
   "license": "MIT",
-  "author": "DoraleeAI"
+  "author": "DoraleeAI",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
