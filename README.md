@@ -1,26 +1,11 @@
 # OpenClaw Lab
 
-Node.js automation agent — a playground for OpenClaw experiments.
+Node.js automation agent workspace for OpenClaw + GitHub + Notion + APIs.
 
-## Requirements
+## Purpose
+- GitHub automation workflows
+- Agent-based task execution
+- API integrations (Notion, Places, ElevenLabs)
 
-- Node.js >= 20
-
-## Quick Start
-
-```bash
-npm start      # run once
-npm run dev    # run with --watch (reloads on file changes)
-npm test       # run node:test suite
-```
-
-## Layout
-
-```
-src/
-  index.js     # entrypoint
-```
-
-## License
-
-MIT
+## Status
+Initial scaffold
