@@ -1,12 +1,11 @@
 // Delegate the actual code change to a coding agent.
 //
 // MVP behavior: we shell out to `claude` (Claude Code in --print mode) inside a
-// git worktree. If `claude` isn't on PATH, fall back to a NO-OP "stub" mode that
-// just writes a TASK.md describing what would have been done, so the loop can
-// still be exercised end-to-end without an LLM bill.
+// git worktree. If `claude` isn't on PATH, fall back to a stub mode that writes
+// a tracked STUB.md file so the loop's PR pipeline can still be exercised
+// end-to-end without an LLM bill.
 import { spawn } from "node:child_process";
-import { access, writeFile } from "node:fs/promises";
-import { constants } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 
 async function onPath(bin) {
@@ -49,13 +48,15 @@ function runClaude({ cwd, prompt, timeoutMs }) {
 }
 
 async function runStub({ cwd, prompt }) {
-  const taskPath = path.join(cwd, "TASK.md");
+  // STUB.md is intentionally tracked (not gitignored) so the loop's PR
+  // pipeline can be exercised end-to-end without a real coding agent.
+  const taskPath = path.join(cwd, "STUB.md");
   await writeFile(
     taskPath,
     `# Stub Agent Task\n\nNo coding agent (\`claude\`) was on PATH, so this is a stub run.\n\n## Prompt\n\n${prompt}\n`,
     "utf8",
   );
-  return { mode: "stub", summary: "Wrote TASK.md (stub mode — no coding agent on PATH)." };
+  return { mode: "stub", summary: "Wrote STUB.md (stub mode: no coding agent on PATH)." };
 }
 
 export async function hasUncommittedChanges(cwd) {
@@ -66,13 +67,4 @@ export async function hasUncommittedChanges(cwd) {
     p.on("error", reject);
     p.on("exit", () => resolve(out.trim().length > 0));
   });
-}
-
-export async function pathExists(p) {
-  try {
-    await access(p, constants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
 }
