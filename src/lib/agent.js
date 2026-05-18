@@ -41,7 +41,17 @@ function runClaude({ cwd, prompt, timeoutMs }) {
     });
     child.on("exit", (code) => {
       clearTimeout(timer);
-      if (code !== 0) return reject(new Error(`claude exited ${code}: ${stderr.slice(0, 500)}`));
+      if (code !== 0) {
+        // Claude Code writes some failure messages (e.g. "Not logged in")
+        // to STDOUT, not stderr. Include a tail of both so the loop's
+        // "processing failed" log line is actually diagnostic.
+        const tail = (s) => s.replace(/\s+$/, "").slice(-500);
+        const detail = [
+          stderr ? `stderr: ${tail(stderr)}` : null,
+          stdout ? `stdout: ${tail(stdout)}` : null,
+        ].filter(Boolean).join(" | ") || "(no output)";
+        return reject(new Error(`claude exited ${code}: ${detail}`));
+      }
       resolve({ mode: "claude", summary: stdout.trim().slice(0, 4000) });
     });
   });
