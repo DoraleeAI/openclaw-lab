@@ -1,0 +1,17 @@
+{
+  "name": "openclaw-lab",
+  "version": "0.1.0",
+  "description": "Node.js automation agent — playground for OpenClaw experiments",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "author": "DoraleeAI"
+}
