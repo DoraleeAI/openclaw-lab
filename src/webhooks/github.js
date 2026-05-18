@@ -5,7 +5,8 @@
 // dispatches issues.opened to a stub; the obvious next step is to enqueue
 // a loop tick instead of polling.
 import express from "express";
-import crypto from "crypto";
+
+import { verifySignature } from "./verify.js";
 
 const SECRET = process.env.GITHUB_WEBHOOK_SECRET || "dev-secret";
 const PORT = Number(process.env.PORT || 3333);
@@ -22,21 +23,6 @@ app.use(express.json({
   limit: "5mb",
   verify: (req, _res, buf) => { req.rawBody = buf; },
 }));
-
-function verifySignature(req) {
-  const sig = req.headers["x-hub-signature-256"];
-  if (!sig || typeof sig !== "string" || !sig.startsWith("sha256=")) return false;
-  if (!req.rawBody || req.rawBody.length === 0) return false;
-
-  const expected = "sha256=" +
-    crypto.createHmac("sha256", SECRET).update(req.rawBody).digest("hex");
-
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  // timingSafeEqual throws on length mismatch; guard before calling.
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
-}
 
 // --- Event handlers --------------------------------------------------------
 
@@ -62,7 +48,12 @@ const handlers = {
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.post("/webhook/github", async (req, res) => {
-  if (!verifySignature(req)) {
+  const ok = verifySignature({
+    signature: req.headers["x-hub-signature-256"],
+    rawBody: req.rawBody,
+    secret: SECRET,
+  });
+  if (!ok) {
     return res.status(401).send("Invalid signature");
   }
 
