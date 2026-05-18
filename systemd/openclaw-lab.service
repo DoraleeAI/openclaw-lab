@@ -1,0 +1,23 @@
+[Unit]
+Description=OpenClaw Lab — Autonomous Dev Loop
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Edit the path if you cloned elsewhere.
+WorkingDirectory=%h/code/openclaw-lab
+ExecStart=/usr/bin/node %h/code/openclaw-lab/src/loop.js
+Environment=REPO=DoraleeAI/openclaw-lab
+Environment=POLL_SECONDS=60
+Environment=MAX_PRS_PER_HOUR=4
+# Don't hammer GitHub if we crash hot.
+Restart=on-failure
+RestartSec=30
+StartLimitIntervalSec=300
+StartLimitBurst=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
